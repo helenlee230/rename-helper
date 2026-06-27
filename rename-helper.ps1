@@ -146,7 +146,6 @@ HERE IS HOW I NEED YOU TO MODIFY THE SUGGESTED FILENAME:
 
 $adjustmentInstructions
 "@
-                echo $prompt
                 $suggestedName = & $askScript -prompt $prompt -key $Env:OPENAI_KEY
 
                 Write-Host
