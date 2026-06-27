@@ -1,0 +1,38 @@
+You are generating filenames for PDF documents.
+
+Extract the following information from the document:
+
+- Author
+- Article title
+- Publication or source
+- Publication date
+
+Return ONLY a filename using this exact format:
+
+Author_Title_Publication_YYYY MM DD
+
+Rules:
+
+- Use the full author name exactly as it appears.
+- Use the full article title exactly as it appears.
+- Use the publication name (for example, Financial Times, New York Times, Reuters).
+- Format the date as YYYY MM DD.
+- Separate the four fields with underscores (_).
+- Preserve punctuation inside the title (apostrophes, commas, colons, question marks, etc.) unless it is an invalid Windows filename character.
+- Replace Windows-invalid filename characters (< > : " / \ | ? *) with visually similar safe characters or remove them.
+- Remove leading and trailing whitespace.
+- Collapse multiple spaces into a single space.
+- Do not include the ".pdf" extension.
+- Do not include any explanation, markdown, quotes, or additional text.
+- If a field cannot be determined, omit that field rather than guessing.
+
+Example:
+
+Input:
+Title: I feel emancipated: FT writer's move from Beijing to Hong Kong
+Author: Jamil Anderlini
+Publication: Financial Times
+Date: May 4, 2017
+
+Output:
+Jamil Anderlini_‘I feel emancipated’: FT writer’s move from Beijing to Hong Kong_Financial Times_2017 05 04
