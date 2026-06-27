@@ -4,9 +4,10 @@ param(
 )
 Add-Type -AssemblyName System.Windows.Forms
 
-$pdfToText = "C:\tools\pdftotext.exe"
+$pdfToText = Join-Path $PSScriptRoot "pdftotext.exe"
 $askScript = Join-Path $PSScriptRoot "ask.ps1"
 $rulesFile = Join-Path $PSScriptRoot "naming-rules.txt"
+$adjustmentPromptFile = Join-Path $PSScriptRoot "adjustment-prompt.txt"
 
 if (!(Test-Path $Folder)) {
     Write-Error "Folder '$Folder' does not exist."
@@ -28,7 +29,13 @@ if (!(Test-Path $rulesFile)) {
     exit 1
 }
 
+if (!(Test-Path $adjustmentPromptFile)) {
+    Write-Error "adjustment-prompt.txt not found: $adjustmentPromptFile"
+    exit 1
+}
+
 $namingRules = Get-Content $rulesFile -Raw
+$adjustmentPrompt = Get-Content $adjustmentPromptFile -Raw
 
 Get-ChildItem -Path $Folder -Filter *.pdf | ForEach-Object {
 
@@ -94,7 +101,7 @@ Respond with ONLY the filename, without the .pdf extension.
 
     while ($loop) {
 
-        $choice = Read-Host "[A]ccept  [E]dit  [S]kip  [Q]uit"
+        $choice = Read-Host "[A]ccept  [E]dit  [S]kip  [Q]uit  [M]odify"
 
         switch ($choice.ToUpper()) {
 
@@ -107,7 +114,7 @@ Respond with ONLY the filename, without the .pdf extension.
             "E" {
                 # Send keystrokes to the console buffer to simulate typing the default value
                 $wshell = New-Object -ComObject WScript.Shell
-                $wshell.SendKeys($newName)
+                $wshell.SendKeys($suggestedName)
 
                 $userInput = Read-Host -Prompt "Filename (without .pdf)"
 
@@ -118,6 +125,34 @@ Respond with ONLY the filename, without the .pdf extension.
 
                 # $newName = Read-Host "Filename (without .pdf)"
                 $loop = $false
+                break
+            }
+
+            "M" {
+                $adjustmentInstructions = Read-Host "How would you like me to adjust the filename? "
+
+                $prompt = @"
+$adjustmentPrompt
+
+PDF CONTENT:
+
+$text
+
+HERE IS THE FILENAME YOU PREVIOUSLY SUGGESTED:
+
+$suggestedName
+
+HERE IS HOW I NEED YOU TO MODIFY THE SUGGESTED FILENAME:
+
+$adjustmentInstructions
+"@
+                echo $prompt
+                $suggestedName = & $askScript -prompt $prompt -key $Env:OPENAI_KEY
+
+                Write-Host
+                Write-Host "Suggested filename:"
+                Write-Host "  $suggestedName"
+                Write-Host
                 break
             }
 
